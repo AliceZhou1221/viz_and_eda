@@ -1,0 +1,136 @@
+---
+title: "viz_and_eda"
+output: github_document
+date: "2024-09-26"
+---
+
+```{r}
+library(tidyverse)
+library(ggridges)
+```
+
+```{r}
+weather_df = 
+  rnoaa::meteo_pull_monitors(
+    c("USW00094728", "USW00022534", "USS0023B17S"),
+    var = c("PRCP", "TMIN", "TMAX"), 
+    date_min = "2021-01-01",
+    date_max = "2022-12-31") |>
+  mutate(
+    name = case_match(
+      id, 
+      "USW00094728" ~ "CentralPark_NY", 
+      "USW00022534" ~ "Molokai_HI",
+      "USS0023B17S" ~ "Waterhole_WA"),
+    tmin = tmin / 10,
+    tmax = tmax / 10) |>
+  select(name, id, everything())
+```
+making first plot
+```{r}
+ggplot(weather_df, aes(x = tmin, y = tmax)) +
+  geom_point()
+
+```
+```{r}
+weather_df %>% 
+  ggplot(aes(x = tmin, y = tmax)) +
+  geom_point()
+```
+```{r}
+weather_df %>% 
+  filter(is.na(tmax))
+
+```
+fancier graph
+```{r}
+weather_df %>% 
+  ggplot(aes(x = tmin, y = tmax, color = name)) +
+  geom_point(alpha = .3, size = .8) +
+  geom_smooth(se = FALSE)
+```
+vs this:
+```{r}
+weather_df %>% 
+  ggplot(aes(x = tmin, y = tmax)) +
+  geom_point(aes(color = name), alpha = .3, size = .8) +
+  geom_smooth(se = FALSE)
+```
+```{r}
+weather_df %>% 
+  ggplot(aes(x = tmin, y = tmax, color = name)) +
+  geom_point(alpha = .3, size = .8) +
+  geom_smooth(se = FALSE) +
+  facet_grid(. ~ name)
+```
+```{r}
+weather_df %>% 
+  ggplot(aes(x = date, y = tmax, color = name, size = prcp))+
+  geom_point(alpha = 0.3)+
+  geom_smooth(se=FALSE)+
+  facet_grid(.~name)
+
+```
+```{r}
+weather_df %>% 
+  filter(name == "CentralPark_NY") %>% 
+  mutate(
+    tmax_f = tmax * (9/5) +32,
+    tmin_f = tmin * (9/5) +32
+  ) %>% 
+  ggplot(aes(x = tmin_f , y = tmax_f))+
+  geom_point()+
+  geom_smooth(method = "lm", se = FALSE)
+  ggplot(aes(x = ))
+```
+```{r}
+weather_df %>% 
+  ggplot(aes(x = tmin, y = tmax))+
+  geom_hex()
+```
+```{r}
+weather_df %>% 
+  ggplot(aes(x = tmin, y = tmax))+
+  geom_point(color = "violet")
+```
+
+```{r}
+weather_df %>% 
+  ggplot(aes(x = tmin, fill = name))+
+  geom_histogram(position = "dodge")
+```
+```{r}
+weather_df %>% 
+  ggplot(aes(x = tmin, y = tmax, fill = name))+
+  geom_violin()
+```
+LA univariate plots
+```{r}
+weather_df %>% 
+  ggplot(aes(x = prcp, fill = name))+
+  geom_density(alpha = 0.3)
+
+weather_df %>% 
+  ggplot(aes(x = prcp, fill = name))+
+  geom_boxplot()
+
+weather_df %>% 
+  filter(prcp>10, prcp<1000) %>% 
+  ggplot(aes(x = prcp, fill = name))+
+  geom_density(alpha = 0.3)
+```
+##saving and embedding plots
+```{r}
+weahter_df %>% 
+  ggplot(aes(x = data, y = tamx, color = name))+
+  geom_point()
+
+ggsave("plots/ggp_weather.pdf", width = 8, height = 6)
+```
+
+
+
+
+
+
+
